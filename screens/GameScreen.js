@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect} from 'react'
-import { StyleSheet, View, Text, Alert } from 'react-native'
+import { StyleSheet, View, Text, Alert, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 
 import NumberContainer from '../components/NumberContainer'
@@ -19,11 +19,10 @@ const generateRandomBetween = (min, max, exclude) => {
 }
 
 const GameScreen = props => {
-    const [currentGuess, setCurrentGuess] = useState(
-        generateRandomBetween(1, 100, props.userChoice)
-    )
+    const initialGuess = generateRandomBetween(1, 100, props.userChoice)
+    const [currentGuess, setCurrentGuess] = useState(initialGuess)
 
-    const [rounds, setRounds] = useState(0);
+    const [pastGuesses, setPastGuesses] = useState([initialGuess]);
     const currentLow = useRef(1)
     const currentHigh = useRef(100)
 
@@ -31,7 +30,7 @@ const GameScreen = props => {
 
     useEffect(() => {
         if (currentGuess === userChoice){
-            onGameOver(rounds)
+            onGameOver(pastGuesses.length)
         }
     }, [currentGuess, userChoice, onGameOver]);
 
@@ -46,13 +45,14 @@ const GameScreen = props => {
         if (direction === 'lower') {
             currentHigh.current = currentGuess;
         } else{
-            currentLow.current = currentGuess
+            currentLow.current = currentGuess + 1
         }
 
         const nextNumber = generateRandomBetween(currentLow.current, currentHigh.current, currentGuess)
 
         setCurrentGuess(nextNumber)
-        setRounds(curRounds => curRounds + 1)
+        //setRounds(curRounds => curRounds + 1)
+        setPastGuesses(curPastGuesses => [nextNumber, ...curPastGuesses])
     }
 
     return (
@@ -67,6 +67,13 @@ const GameScreen = props => {
                     <Ionicons name="md-add" size={24} color="white"/>
                 </MainButton>
             </Card>
+            <ScrollView>
+                {pastGuesses.map(guess => (
+                    <View key={guess}>
+                        <Text>{guess}</Text>
+                    </View>
+                ))}
+            </ScrollView>
         </View>
     )
 }
